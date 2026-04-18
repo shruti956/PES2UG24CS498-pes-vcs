@@ -605,3 +605,4 @@ The following questions cover filesystem concepts beyond the implementation scop
 # Phase 2: tree objects store directory snapshots
 # Phase 2: tree entries are sorted by name for deterministic hashing
 # Phase 2: test_tree passes serialize/parse roundtrip
+# Phase 2: fixed Makefile to link index.o with test_tree
