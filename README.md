@@ -607,3 +607,4 @@ The following questions cover filesystem concepts beyond the implementation scop
 # Phase 2: test_tree passes serialize/parse roundtrip
 # Phase 2: fixed Makefile to link index.o with test_tree
 # Phase 3: index_load reads .pes/index text file into memory
+# Phase 3: index_save writes atomically using temp file and rename
