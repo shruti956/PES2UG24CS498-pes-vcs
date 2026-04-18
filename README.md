@@ -604,3 +604,4 @@ The following questions cover filesystem concepts beyond the implementation scop
 # object_write and object_read implemented
 # Phase 2: tree objects store directory snapshots
 # Phase 2: tree entries are sorted by name for deterministic hashing
+# Phase 2: test_tree passes serialize/parse roundtrip
