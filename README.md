@@ -611,3 +611,4 @@ The following questions cover filesystem concepts beyond the implementation scop
 # Phase 3: index_add reads file, writes blob, updates index entry
 # Phase 3: fixed index_save crash by removing qsort call
 # Phase 3: pes add and pes status both working correctly
+# Phase 4: pes log shows full commit history with hashes, authors, dates
