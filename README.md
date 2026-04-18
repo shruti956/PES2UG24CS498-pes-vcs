@@ -602,3 +602,4 @@ The following questions cover filesystem concepts beyond the implementation scop
 - **The Git Parable**: https://tom.preston-werner.com/2009/05/19/the-git-parable.html
 # Phase 1 complete
 # object_write and object_read implemented
+# Phase 2: tree objects store directory snapshots
