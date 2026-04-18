@@ -7,7 +7,9 @@
 #ifndef INDEX_H
 #define INDEX_H
 
+#include <stdint.h>
 #include "pes.h"
+
 
 #define MAX_INDEX_ENTRIES 10000
 

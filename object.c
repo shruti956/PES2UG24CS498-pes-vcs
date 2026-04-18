@@ -1,4 +1,4 @@
-// object.c — Content-addressable object store
+/// object.c — Content-addressable object store
 //
 // Every piece of data (file contents, directory listings, commits) is stored
 // as an "object" named by its SHA-256 hash. Objects are stored under
@@ -48,6 +48,7 @@ void compute_hash(const void *data, size_t len, ObjectID *id_out) {
 // Get the filesystem path where an object should be stored.
 // Format: .pes/objects/XX/YYYYYYYY...
 // The first 2 hex chars form the shard directory; the rest is the filename.
+
 void object_path(const ObjectID *id, char *path_out, size_t path_size) {
     char hex[HASH_HEX_SIZE + 1];
     hash_to_hex(id, hex);
@@ -95,8 +96,68 @@ int object_exists(const ObjectID *id) {
 // Returns 0 on success, -1 on error.
 int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out) {
     // TODO: Implement
-    (void)type; (void)data; (void)len; (void)id_out;
-    return -1;
+    /* build header: "blob 42\0", "tree 42\0", or "commit 42\0" */
+    
+    // 1. Build header: "blob <size>\0" or "tree <size>\0" or "commit <size>\0"
+    const char *type_str;
+    if (type == OBJ_BLOB)        type_str = "blob";
+    else if (type == OBJ_TREE)   type_str = "tree";
+    else if (type == OBJ_COMMIT) type_str = "commit";
+    else return -1;
+
+    char header[64];
+    int header_len = snprintf(header, sizeof(header), "%s %zu", type_str, len) + 1;
+    // +1 to include the null byte at end of header string
+
+    // 2. Build full object = header + data
+    size_t full_len = (size_t)header_len + len;
+    uint8_t *full_obj = malloc(full_len);
+    if (!full_obj) return -1;
+    memcpy(full_obj, header, header_len);
+    memcpy(full_obj + header_len, data, len);
+
+    // 3. Compute SHA-256 of full object
+    compute_hash(full_obj, full_len, id_out);
+
+    // 4. Check for deduplication
+    if (object_exists(id_out)) {
+        free(full_obj);
+        return 0;
+    }
+
+    // 5. Create shard directory .pes/objects/XX/
+    char hex[HASH_HEX_SIZE + 1];
+    hash_to_hex(id_out, hex);
+    char shard_dir[512];
+    snprintf(shard_dir, sizeof(shard_dir), "%s/%.2s", OBJECTS_DIR, hex);
+    mkdir(shard_dir, 0755); // OK if already exists
+
+    // 6. Write to a temp file
+    char final_path[512];
+    object_path(id_out, final_path, sizeof(final_path));
+    char tmp_path[512];
+    snprintf(tmp_path, sizeof(tmp_path), "%.508s.tmp", final_path);
+
+    int fd = open(tmp_path, O_CREAT | O_WRONLY | O_TRUNC, 0444);
+    if (fd < 0) { free(full_obj); return -1; }
+
+    ssize_t written = write(fd, full_obj, full_len);
+    free(full_obj);
+    if (written != (ssize_t)full_len) { close(fd); unlink(tmp_path); return -1; }
+
+    // 7. fsync the temp file
+    fsync(fd);
+    close(fd);
+
+    // 8. Atomically rename to final path
+    if (rename(tmp_path, final_path) != 0) { unlink(tmp_path); return -1; }
+
+    // 9. fsync the shard directory
+    int dir_fd = open(shard_dir, O_RDONLY);
+    if (dir_fd >= 0) { fsync(dir_fd); close(dir_fd); }
+
+    return 0;
+
 }
 
 // Read an object from the store.
@@ -126,3 +187,6 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
     (void)id; (void)type_out; (void)data_out; (void)len_out;
     return -1;
 }
+    
+
+

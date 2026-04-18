@@ -15,6 +15,7 @@
 // PROVIDED functions: index_find, index_remove, index_status
 // TODO functions:     index_load, index_save, index_add
 
+
 #include "index.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +24,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
+
+int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out);
 
 // ─── PROVIDED ────────────────────────────────────────────────────────────────
 
