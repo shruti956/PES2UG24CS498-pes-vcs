@@ -78,3 +78,4 @@ The race condition works like this: GC scans all refs and builds the reachable s
 Git avoids this by using a grace period — objects newer than a certain age (default 2 weeks) are never deleted by GC regardless of reachability. This gives any in-progress operations time to complete and update their refs before GC can touch the objects they created.
 
 ---
+# Phase 1: SHA-256 used for content-addressable storage, objects sharded by first 2 hex chars
